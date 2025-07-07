@@ -1,0 +1,39 @@
+async function hacerRetiro(monto) {
+  mostrarMensaje("Procesando retiro...", "#ff0");
+  try {
+    const res = await fetch("https://teo-p.onrender.com/retiro", {  // URL corregida
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": "secret_token_123"  // Header obligatorio
+      },
+      body: JSON.stringify({
+        currency: "BTC",
+        amount: monto,
+        address: wallet  // wallet debe estar definida con la dirección BTC del usuario
+      })
+    });
+
+    const text = await res.text();
+    console.log("Respuesta cruda del servidor:", text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch(e) {
+      mostrarError("Respuesta inválida del servidor");
+      console.error("Error parseando JSON:", e);
+      return;
+    }
+
+    if (res.ok && data.success) {
+      mostrarResultado(data);
+      guardarHistorial(data);
+      mostrarHistorial();
+    } else {
+      mostrarError(data.detail || data.message || "Error desconocido");
+    }
+  } catch (err) {
+    mostrarError("Error de red o servidor: " + err.message);
+  }
+}
